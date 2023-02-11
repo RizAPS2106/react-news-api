@@ -1,3 +1,3 @@
 export default interface NewsResult {
-    news: any;
+    news: any[];
 }

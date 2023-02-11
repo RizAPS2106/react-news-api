@@ -10,9 +10,8 @@ export interface NewsComponentProps {
 
 export interface NewsComponentState {
   type: string;
-  query: any;
-  news: any;
-
+  query: object[];
+  news: any[];
   isClearButtonVisible: boolean;
   isShowError: boolean;
   errorMessage: string;
@@ -31,7 +30,6 @@ export default class NewsComponent extends React.Component<NewsComponentProps, N
       type: newsViewModel.type,
       query: newsViewModel.query,
       news: newsViewModel.news,
-
       isClearButtonVisible: newsViewModel.isClearButtonVisible,
       isShowError: newsViewModel.isShowError,
       errorMessage: newsViewModel.errorMessage,
@@ -40,8 +38,7 @@ export default class NewsComponent extends React.Component<NewsComponentProps, N
 
   public componentDidMount(): void {
     this.newsViewModel.attachView(this);
-    this.newsViewModel.setNewsList();
-    this.newsViewModel.getNewsList();
+    this.newsViewModel.loadNewsList();
   }
   
   public componentWillUnmount(): void {
@@ -53,41 +50,44 @@ export default class NewsComponent extends React.Component<NewsComponentProps, N
       type: this.newsViewModel.type,
       query: this.newsViewModel.query,
       news: this.newsViewModel.news,
-
       isClearButtonVisible: this.newsViewModel.isClearButtonVisible,
       isShowError: this.newsViewModel.isShowError,
       errorMessage: this.newsViewModel.errorMessage,
     });
   }
 
-  public onSearchClick(type: string, query: any): void {
-    this.newsViewModel.onSearchClicked(type, query);
-    this.newsViewModel.setQueries(type, query);
-    this.newsViewModel.getNewsList();
-  };
-
   public render() : JSX.Element {
     const {
-        type,
-        query,
-        news,
-        isClearButtonVisible,
-        isShowError,
-        errorMessage,
+      type,
+      query,
+      news,
+      isClearButtonVisible,
+      isShowError,
+      errorMessage,
     } = this.state;
 
     return (
-        <div className='container'>
-            <h1>News</h1>
-            <Row>
-                <Col>
-                    <Card title="Card">
-                        <h3></h3>
-                        <p>Card content</p>
-                    </Card>
+      <div className='container'>
+        <h1>News</h1>
+        
+        { 
+          news.length > 1 
+          ?
+            <Row gutter={[16, 16]}>
+              { news.map((item, index)=>(
+                <Col key={index} className='col-6'>
+                  <Card className='h-100' cover={<img alt="example" src={item['urlToImage']} />} hoverable>
+                    <h3>{item['title']}</h3>
+                    <p><small>{item['author']}</small></p>
+                    <p>{item['description']}</p>
+                  </Card>
                 </Col>
+              )) } 
             </Row>
-        </div>
+          :
+            <p className='text-center'>Wait...</p>
+        }
+      </div>
     );
   }
 }

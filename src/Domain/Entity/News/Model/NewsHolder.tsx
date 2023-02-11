@@ -4,29 +4,32 @@ export default class NewsHolder {
   private newsListener:NewsListener[];
   private isSearched:boolean;
   private type:string;
-  private query:any;
-  private news:any;
+  private query:object[];
+  private news:any[];
 
   public constructor() {
     this.newsListener = [];
     this.isSearched = false;
     this.type = 'everything';
-    this.query = [{type: 'q', value: ''}];
+    this.query = [{type: 'domains', value: 'wsj.com'}];
     this.news = [];
   }
 
-  public setNews(news: []) {
-    this.news = news;
-  }
-
-  public getNews() {
+  public getNewsList() {
     return this.news;
   }
+
+  public onLoadNews(news: any[]) {
+    this.news = news;
+    this.notifyListeners();
+  }
   
-  public onSearch(type: string, query: []) {
+  public onSearch(type: string, query: object[]) {
     this.type = type;
     this.query = query;
     this.isSearched = true;
+
+    this.notifyListeners();
   }
 
   public onClearSearch() {
@@ -39,10 +42,6 @@ export default class NewsHolder {
   
   public isNewsSearched() {
     return this.isSearched;
-  }
-
-  public getQueries() {
-    return [{type: this.type, query: this.query}];
   }
 
   public addNewsListener(newsListener: NewsListener): void {

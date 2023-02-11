@@ -10,18 +10,8 @@ export default class NewsUseCase {
     this.newsHolder = newsHolder;
   }
 
-  public async newsList(): Promise<void> {
-    const newsResult = await this.newsRepository.getNewsAPI('everything', [{type: 'q', value: ''}]);
-    console.log(newsResult.news);
-    this.newsHolder.setNews(newsResult.news);
-    this.newsHolder.getNews();
-  }
-  
-  public async searchNews(type: string, query:any): Promise<void> {
-    const newsResult = await this.newsRepository.getNewsAPI(type, query);
-
-    this.newsHolder.onSearch(type, query);
-    this.newsHolder.setNews(newsResult.news);
-    this.newsHolder.getNews();
+  public async newsList(type: string, query: object[]): Promise<void> {
+    const newsResult = await this.newsRepository.newsAPI(type, query);
+    this.newsHolder.onLoadNews(newsResult.news);
   }
 }
