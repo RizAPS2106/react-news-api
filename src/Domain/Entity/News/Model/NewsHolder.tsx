@@ -21,6 +21,7 @@ export default class NewsHolder {
 
   public onLoadNews(news: any[]) {
     this.news = news;
+    
     this.notifyListeners();
   }
   

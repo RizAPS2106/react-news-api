@@ -9,9 +9,12 @@ export default class NewsViewModelImpl implements NewsViewModel, NewsListener {
   public type: string;
   public query: object[];
   public news: any[]; 
+  public newsItem: any[]; 
   public isClearButtonVisible: boolean;
   public isShowError: boolean;
   public errorMessage: string;
+  public openDetail: boolean;
+  public isShowLoading: boolean;
 
   private baseView?: BaseView;
   private newsUseCase: NewsUseCase;
@@ -21,9 +24,12 @@ export default class NewsViewModelImpl implements NewsViewModel, NewsListener {
     this.type = 'everything';
     this.query = [{type: 'domains', value: 'wsj.com'}];
     this.news = [];
+    this.newsItem = [];
     this.isClearButtonVisible = false;
     this.isShowError = false;
     this.errorMessage = '';
+    this.openDetail= false;
+    this.isShowLoading= true;
 
     this.newsUseCase = newsUseCase;
     this.newsHolder = newsHolder;
@@ -44,11 +50,6 @@ export default class NewsViewModelImpl implements NewsViewModel, NewsListener {
     this.notifyViewAboutChanges();
   };
 
-  public onInputQueryChanged(type: string, query: any[]) {
-    this.type = type;
-    this.query = query;
-  }
-
   public loadNewsList = async () : Promise<void> => {
     if (!this.validateQuery()) {
       this.isShowError = true;
@@ -56,26 +57,62 @@ export default class NewsViewModelImpl implements NewsViewModel, NewsListener {
       this.notifyViewAboutChanges();
       return;
     }
+
+    this.isShowLoading = true;
     
     try {
       await this.newsUseCase.newsList(this.type, this.query);
       this.isShowError = false;
       this.errorMessage = '';
+      this.isShowLoading = false;
     } catch (e:any) {
-      this.errorMessage = e.message;
       this.isShowError = true;
+      this.errorMessage = e.message;
+      this.isShowLoading = false;
     }
 
     this.notifyViewAboutChanges();
   };
 
-  public onSearchClicked = (): void => {
-    this.newsHolder.onSearch(this.type, this.query);
+  public onSearchClicked = (type: string, query: object): void => {
+    if(query['value'] === '') {
+      return
+    }
+
+    this.newsHolder.onSearch(type, [{type: 'domains', value: 'wsj.com'}, query]);
+    this.type = type;
+    this.query = [{type: 'domains', value: 'wsj.com'}, query];
+    this.isClearButtonVisible = true;
+    
+    this.loadNewsList();
+
+    this.notifyViewAboutChanges();
   };
 
   public onClearSearchClicked = (): void => {
     this.newsHolder.onClearSearch();
+    this.type = 'everything';
+    this.query = [{type: 'domains', value: 'wsj.com'}];
+    this.isClearButtonVisible = false;
+
+    this.loadNewsList();
+
+    this.notifyViewAboutChanges();
   };
+
+  public onOpenDetail = (newsItem: any[]): void => {
+    this.newsItem = newsItem;
+    this.openDetail = true;
+    
+    this.notifyViewAboutChanges();
+  }
+
+  public onCloseDetail = (): void => {
+    this.newsItem = [];
+    this.openDetail = false;
+
+    this.notifyViewAboutChanges();
+  }
 
   private validateQuery = (): boolean => {
     if (!QueryValidator.isValidQuery(this.query)) {
